@@ -1,0 +1,11 @@
+{:profiles/dev {
+       :env {:http-port 7000
+             :app-host "http://localhost:7000"
+             :nrepl-port nil
+             :google-client-id nil
+             :google-client-secret nil
+             :news-api-key nil
+             :news-watcher-interval 15
+             :loggly-api-token nil
+             :db-location "data"}}
+         }

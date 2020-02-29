@@ -7,5 +7,5 @@
              :news-api-key nil
              :news-watcher-interval 15
              :loggly-api-token nil
-             :db-location "data"}}
+             :redis-url redis://localhost:6379}}
          }

@@ -24,3 +24,5 @@ out
 /node_modules
 /.shadow-cljs
 resources/public/css
+
+.env

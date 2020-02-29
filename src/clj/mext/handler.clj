@@ -7,6 +7,7 @@
     [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
     [taoensso.carmine.ring :refer [carmine-store]]
     [cheshire.core :as json]
+    [environ.core :refer [env]]
     [mext.db :as db]
     [mext.oauth :as oauth]
     [system.repl :refer [system]]
@@ -141,7 +142,7 @@
   (-> routes
     (wrap-restful-format :formats [:json])
     (wrap-defaults (-> site-defaults
-                     (assoc-in [:session :store] (carmine-store "redis://localhost:6379" {:key-prefix "mext"})) ;; TODO secure
+                     (assoc-in [:session :store] (carmine-store {:pool {} :spec {:uri (:redis-url env)}} {:key-prefix "mext"})) ;; TODO secure
                      (assoc-in [:session :cookie-attrs :max-age] (* 60 60 24 30)) ;; month
                      (assoc-in [:security :anti-forgery] false))) ;; TODO check too
     wrap-dir-index

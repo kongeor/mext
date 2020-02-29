@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  cache:
+    image: redislabs/redisearch
+  cherno_alpha:
+#    image: kongeor/mext
+    build: .
+    restart: unless-stopped
+    ports:
+      - "7000:7000"
+    environment:
+      - HTTP_PORT
+      - APP_HOST
+      - GOOGLE_CLIENT_ID
+      - GOOGLE_CLIENT_SECRET
+      - NEWS_API_KEY
+      - NEWS_WATCHER_INTERVAL
+      - LOGGLY_API_TOKEN
+      - PG_DB
+      - PG_HOST
+      - PG_USER
+      - PG_PASS
+      - REDIS_URL
+    depends_on:
+      - cache

@@ -4,31 +4,31 @@
   :license {:name "GNU Affero General Public License"
             :url "https://www.gnu.org/licenses/agpl-3.0.en.html"}
   :dependencies [[org.clojure/clojure "1.10.1"]
-                 [org.danielsz/system "0.4.5"]
-                 [compojure "1.6.1"]
-                 [environ"1.1.0"]
-                 [ring "1.8.0"]
+                 [org.danielsz/system "0.4.6"]
+                 [compojure "1.6.2"]
+                 [environ"1.2.0"]
+                 [ring "1.8.2"]
                  [ring/ring-defaults "0.3.2"]
                  [ring-middleware-format "0.7.4"]
-                 [http-kit "2.4.0-alpha6"]
-                 [juxt/crux-core "20.01-1.6.2-alpha"]
-                 [juxt/crux-rocksdb "20.01-1.6.2-alpha"]
-                 [juxt/crux-jdbc "20.01-1.6.2-alpha"]
-                 [org.postgresql/postgresql "42.2.10"]
-                 [com.taoensso/timbre "4.10.0"]
-                 [com.taoensso/carmine "2.19.1"]
+                 [http-kit "2.5.0"]
+                 [juxt/crux-core "20.09-1.12.1-beta"]
+                 [juxt/crux-rocksdb "20.09-1.12.1-beta"]
+                 [juxt/crux-jdbc "20.09-1.12.1-beta"]
+                 [org.postgresql/postgresql "42.2.18"]
+                 [com.taoensso/timbre "5.1.0"]
+                 [com.taoensso/carmine "3.0.1"]
                  [clojurewerkz/quartzite "2.1.0"]
                  [javax.xml.bind/jaxb-api "2.4.0-b180830.0359"]
-                 [clj-http "3.10.0"]
+                 [clj-http "3.10.3"]
                  [enlive "1.1.6"]
                  ;; cljs
-                 [org.clojure/clojurescript "1.10.597"
+                 [org.clojure/clojurescript "1.10.773"
                   :exclusions [com.google.javascript/closure-compiler-unshaded
                                org.clojure/google-closure-library]]
-                 [thheller/shadow-cljs "2.8.88"]
-                 [reagent "0.9.1"]
+                 [thheller/shadow-cljs "2.11.6"]
+                 [reagent "0.10.0"]
                  [day8.re-frame/http-fx "0.1.6"]
-                 [re-frame "0.11.0"]
+                 [re-frame "1.1.1"]
                  [secretary "1.2.3"]]
 
   :plugins [[lein-environ "1.0.0"]
@@ -52,9 +52,9 @@
   :profiles {:dev [:project/dev :profiles/dev]
              :profiles/dev {}
              :project/dev {:source-paths ["dev"]
-                           :dependencies [[binaryage/devtools "1.0.0"]
-                                          [day8.re-frame/re-frame-10x "0.5.2"]
-                                          [day8.re-frame/tracing "0.5.3"]]}
+                           :dependencies [[binaryage/devtools "1.0.2"]
+                                          [day8.re-frame/re-frame-10x "0.7.0"]
+                                          [day8.re-frame/tracing "0.6.0"]]}
              :prod {:env          {:http-port 8000
                                    :repl-port 8001}
                     :dependencies [[org.clojure/tools.nrepl "0.2.13"]

@@ -14,7 +14,8 @@
             [clojurewerkz.quartzite.scheduler :as qs]
             [clojurewerkz.quartzite.triggers :as t]
             [clojurewerkz.quartzite.schedule.simple :refer [schedule repeat-forever with-interval-in-minutes]]
-            [clojurewerkz.quartzite.jobs :refer [defjob] :as j])
+            [clojurewerkz.quartzite.jobs :refer [defjob] :as j]
+            [clojure.java.io :as io])
   )
 
 (if-let [token (env :loggly-api-token)]
@@ -30,17 +31,20 @@
 (defrecord CruxDb [db]
   component/Lifecycle
   (start [component]
-    (let [db (crux/start-node {:crux.node/topology 'crux.jdbc/topology
-                               :crux.jdbc/dbtype "postgresql"
-                               :crux.jdbc/dbname (env :pg-db)
-                               :crux.jdbc/host (env :pg-host)
-                               :crux.jdbc/user (env :pg-user)
-                               :crux.jdbc/password (env :pg-pass)})
-          ; db
-          #_(crux/start-node {:crux.node/topology :crux.standalone/topology
-                            :crux.node/kv-store "crux.kv.rocksdb/kv"
-                            :crux.kv/db-dir "data/db-dir-1"
-                            :crux.standalone/event-log-dir "data/eventlog-1"})]
+    (let [db (crux/start-node
+               {:crux.jdbc/connection-pool {:dialect {:crux/module 'crux.jdbc.psql/->dialect}
+                                            ; :pool-opts { ... }
+                                            :db-spec {:dbname (env :pg-db)
+                                                      :host (env :pg-host)
+                                                      :user (env :pg-user)
+                                                      :password (env :pg-pass)}
+                                                      }
+                :crux/tx-log {:crux/module 'crux.jdbc/->tx-log
+                              :connection-pool :crux.jdbc/connection-pool}
+                :crux/document-store {:crux/module 'crux.jdbc/->document-store
+                                      :connection-pool :crux.jdbc/connection-pool}
+                :crux/index-store {:kv-store {:crux/module 'crux.rocksdb/->kv-store
+                                              :db-dir (io/file "data")}}})]
       (timbre/info "starting crux")
       (assoc component :db db)))
   (stop [component]

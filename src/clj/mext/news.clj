@@ -23,15 +23,20 @@
 (defn db-fmt [headline]
   (let [author (util/trim-to-null (:author headline))
         published-at (clojure.instant/read-instant-date (:publishedAt headline))
-        id (keyword (util/md5 (str (:title headline) (str published-at))))
-        descrption (util/strip-html (:description headline))]
+        description (util/strip-html (:description headline))
+        source (:source headline)
+        source-name (:name source)
+        title (:title headline)
+        id (util/uuid-v3 title source-name published-at)]
     {:crux.db/id id
      :mext.headline/author author
-     :mext.headline/title (:title headline)
-     :mext.headline/description descrption
+     :mext.headline/title title
+     :mext.headline/description description
      :mext.headline/url (:url headline)
      :mext.headline/image (:urlToImage headline)
-     :mext.headline/published-at published-at}))
+     :mext.headline/published-at published-at
+     :mext.headline/source-id (:id source)
+     :mext.headline/source-name source-name}))
 
 (defn fetch-and-persist []
   (if-let [latest (fetch-latest-headlines)]
@@ -41,3 +46,6 @@
           new-headlines (remove #(-> (:crux.db/id %) existing-ids) headlines)]
       (timbre/info "persisting" (count new-headlines) "new headlines")
       (db/insert-all new-headlines))))
+
+#_(fetch-latest-headlines)
+#_(fetch-and-persist)

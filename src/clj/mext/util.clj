@@ -1,6 +1,11 @@
 (ns mext.util
   (:require [net.cgrand.enlive-html :as enlive])
-  (:import (java.security MessageDigest)))
+  (:import (java.security MessageDigest)
+           (com.github.kongeor.elst Elst)))
+
+(defn uuid-v3 [& args]
+  (let [s (clojure.string/join (map str args))]
+    (java.util.UUID/nameUUIDFromBytes (.getBytes s))))
 
 (defn md5 [& args]
   (let [s (clojure.string/join (map str args))
@@ -44,3 +49,12 @@
 (defn word-count [str]
   (if str
     (count (clojure.string/split str #" "))))
+
+(defn substring [str n]
+  (if str
+    (if (> (count str) n)
+      (.substring str 0 n)
+      str)))
+
+(defn el-stem [s]
+  (Elst/lowerStopAndStem s))

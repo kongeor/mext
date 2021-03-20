@@ -3,6 +3,7 @@
   :url "http://example.com/FIXME"
   :license {:name "GNU Affero General Public License"
             :url "https://www.gnu.org/licenses/agpl-3.0.en.html"}
+  :repositories [["jitpack" "https://jitpack.io"]]
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.danielsz/system "0.4.6"]
                  [compojure "1.6.2"]
@@ -11,9 +12,9 @@
                  [ring/ring-defaults "0.3.2"]
                  [ring-middleware-format "0.7.4"]
                  [http-kit "2.5.0"]
-                 [juxt/crux-core "20.09-1.12.1-beta"]
-                 [juxt/crux-rocksdb "20.09-1.12.1-beta"]
-                 [juxt/crux-jdbc "20.09-1.12.1-beta"]
+                 [juxt/crux-core "21.02-1.15.0-beta"]
+                 [juxt/crux-rocksdb "21.02-1.15.0-beta"]
+                 [juxt/crux-jdbc "21.02-1.15.0-beta"]
                  [org.postgresql/postgresql "42.2.18"]
                  [com.taoensso/timbre "5.1.0"]
                  [com.taoensso/carmine "3.0.1"]
@@ -29,7 +30,8 @@
                  [reagent "0.10.0"]
                  [day8.re-frame/http-fx "0.1.6"]
                  [re-frame "1.1.1"]
-                 [secretary "1.2.3"]]
+                 [secretary "1.2.3"]
+                 [com.github.kongeor/elst "0.3.0"]]
 
   :plugins [[lein-environ "1.0.0"]
             [lein-pprint "1.2.0"]]
@@ -63,8 +65,9 @@
                        :dependencies [[day8.re-frame/tracing-stubs "0.5.3"]]
                        :omit-source  true
                        :aot          :all
-                       :uberjar-name "mext.jar"
-                       :prep-tasks   ["compile" ["prod"]]}}
+                       ; :uberjar-name "mext.jar"
+                       ; :prep-tasks   ["compile" ["prod"]]
+                       }}
   :main ^:skip-aot mext.core
   :repl-options {:init-ns user}
   )

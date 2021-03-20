@@ -10,6 +10,7 @@
     [environ.core :refer [env]]
     [mext.db :as db]
     [mext.oauth :as oauth]
+    [mext.html :as html]
     [system.repl :refer [system]]
     [ring.util.response :as response]
     [taoensso.timbre :as timbre]
@@ -102,8 +103,16 @@
             (timbre/info "successful google login" email)
             (db/upsert-user email)))))))
 
+(defn index-handler [req]
+  (let [page-str (-> req :query-params (get "page"))
+        page (if page-str
+               (Integer/parseInt page-str)
+               0)
+        page' (inc page)]
+    (html/index nil nil page')))
+
 (defroutes routes
-  (GET "/" [] (resource-response "index.html" {:root "public"}))
+  (GET "/" []  index-handler)
   (GET "/api/headlines" [] headlines-handler)
   (GET "/api/headlines/:id/view" [] view-headline-handler)
   (POST "/api/headlines/:id/sentiment" [] set-sentiment-handler)
@@ -130,7 +139,7 @@
            {:status 500
             :body "Oh no! :'("}))))
 
-(defn wrap-dir-index [handler]
+#_(defn wrap-dir-index [handler]
   (fn [req]
     (handler
       (update
@@ -140,12 +149,12 @@
 
 (def app
   (-> routes
-    (wrap-restful-format :formats [:json])
+    #_(wrap-restful-format :formats [:json])
     (wrap-defaults (-> site-defaults
                      (assoc-in [:session :store] (carmine-store {:pool {} :spec {:uri (:redis-url env)}} {:key-prefix "mext"})) ;; TODO secure
                      (assoc-in [:session :cookie-attrs :max-age] (* 60 60 24 30)) ;; month
                      (assoc-in [:security :anti-forgery] false))) ;; TODO check too
-    wrap-dir-index
+    ; wrap-dir-index
     wrap-exception))
 
 ;; TODO fix response

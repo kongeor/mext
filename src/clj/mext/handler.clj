@@ -111,8 +111,15 @@
         page' (inc page)]
     (html/index nil nil page')))
 
+(defn tag-form-handler [req]
+  (let [a 1]
+    (html/tag-form nil nil nil)))
+
 (defroutes routes
   (GET "/" []  index-handler)
+  (GET "/admin/tags" []  (html/tag-form nil nil nil))
+  (GET "/admin/tags-test" []  (html/tag-form-test nil nil nil))
+  (POST "/admin/tags" []  tag-form-handler)
   (GET "/api/headlines" [] headlines-handler)
   (GET "/api/headlines/:id/view" [] view-headline-handler)
   (POST "/api/headlines/:id/sentiment" [] set-sentiment-handler)

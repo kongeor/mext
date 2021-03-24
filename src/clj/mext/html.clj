@@ -20,6 +20,10 @@
                :defer true
                }]
 
+     [:script {:src "//cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.1/dist/alpine.min.js"
+               :defer true
+               }]
+
      (include-css
        "//cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css")]
     [:body
@@ -71,6 +75,56 @@
             (headline h))])
        [:div.columns.is-centered
         [:a.button.is-primary {:href (str "/?page=" page)} "Load moar"]]])))
+
+(defn tag-form [db uid page]
+  (let [tags [{:key "tag2" :raw-value "foo bar baz"} {:key "tag2" :raw-value "quux qu"}]
+        now (inst-ms (Date.))]
+    (base
+      uid
+      [:form {:action "/admin/tags" :method "post"}
+       (for [t tags]
+         [:div
+          [:div {:class "field is-horizontal"}
+           [:div {:class "field-label is-normal"}
+            [:label {:class "label"} "Tag"]]
+           [:div {:class "field-body"}
+            [:div {:class "field"}
+             [:div {:class "control"}
+              [:input.input {:name (:key t) :type "text" :value (:key t)}]]
+             [:p {:class "help is-danger"} "This field is required"]]]]
+          [:div {:class "field is-horizontal"}
+           [:div {:class "field-label is-normal"}
+            [:label {:class "label"} "Values"]]
+           [:div {:class "field-body"}
+            [:div {:class "field"}
+             [:div {:class "control"}
+              [:textarea.textarea {:name (str (:key t) "-raw-value")} (:raw-value t)]]]]]
+          [:hr]])
+       [:div {:class "field is-horizontal"}
+        [:div {:class "field-label"} "<!-- Left empty for spacing -->"]
+        [:div {:class "field-body"}
+         [:div {:class "field"}
+          [:div {:class "control"}
+           [:input.button.is-primary {:type "submit" :value "Send message"}]]]]]])))
+
+
+(defn tag-form-test [db uid page]
+  (let [data {:open false :items [{:key "tag1" :raw-value "foo bar baz"} {:key "tag2" :raw-value "quux qu!!"}]}
+        now (inst-ms (Date.))]
+    (base
+      uid
+
+      [:div
+       [:div {:x-data (clojure.data.json/write-str data)}
+        [:button {"@click" "open = true"} "show"]
+        [:ul {:x-show "open" "@click.away" "open = false"} "dropdown"]
+        [:template {:x-show "items" :x-for "(item, index) in items" ":key" "item"}
+         [:div
+          [:div {:x-text "item.key"}]
+          [:div {:x-text "item['raw-value']"}]
+          [:button {"@click" "items.splice(index, 1)"} "x"]]
+         ]]]
+      )))
 
 #_(defn stats [db uid]
   (let [album-data (stats/album-plays db uid)]

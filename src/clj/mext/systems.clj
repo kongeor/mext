@@ -44,7 +44,8 @@
                 :crux/document-store {:crux/module 'crux.jdbc/->document-store
                                       :connection-pool :crux.jdbc/connection-pool}
                 :crux/index-store {:kv-store {:crux/module 'crux.rocksdb/->kv-store
-                                              :db-dir (io/file "data")}}})]
+                                              :db-dir (io/file "data")}}
+                :crux.lucene/lucene-store {:db-dir "lucene-dir" :indexer 'crux.lucene.multi-field/->indexer}})]
       (timbre/info "starting crux")
       (assoc component :db db)))
   (stop [component]

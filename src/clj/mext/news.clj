@@ -20,6 +20,11 @@
   (filter #(clojure.string/includes? (:title %) "Πρ") (:articles data))
   (first data))
 
+(defn create-search-text-fields [title description]
+  (let [joined (str (or title "") " " (or description " "))]
+    {:mext.headline/search-text (util/el-lower-and-stem joined)
+     :mext.headline/search-text-stemmed (util/el-lower-stop-and-stem joined)}))
+
 (defn db-fmt [headline]
   (let [author (util/trim-to-null (:author headline))
         published-at (clojure.instant/read-instant-date (:publishedAt headline))
@@ -27,16 +32,19 @@
         source (:source headline)
         source-name (:name source)
         title (:title headline)
-        id (util/uuid-v3 title source-name published-at)]
-    {:crux.db/id id
-     :mext.headline/author author
-     :mext.headline/title title
-     :mext.headline/description description
-     :mext.headline/url (:url headline)
-     :mext.headline/image (:urlToImage headline)
-     :mext.headline/published-at published-at
-     :mext.headline/source-id (:id source)
-     :mext.headline/source-name source-name}))
+        id (util/uuid-v3 title source-name published-at)
+        search-fields (create-search-text-fields title description)]
+    (merge
+      {:crux.db/id id
+       :mext.headline/author author
+       :mext.headline/title title
+       :mext.headline/description description
+       :mext.headline/url (:url headline)
+       :mext.headline/image (:urlToImage headline)
+       :mext.headline/published-at published-at
+       :mext.headline/source-id (:id source)
+       :mext.headline/source-name source-name}
+      search-fields)))
 
 (defn fetch-and-persist []
   (if-let [latest (fetch-latest-headlines)]

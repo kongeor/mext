@@ -13,7 +13,7 @@
         raw (.digest algorithm (.getBytes s))]
     (format "%032x" (BigInteger. 1 raw))))
 
-(defn uuid [] (.toString (java.util.UUID/randomUUID)))
+(defn uuid [] (java.util.UUID/randomUUID))
 
 (defn manifest-map
   "Returns the mainAttributes of the manifest of the passed in class as a map."
@@ -56,5 +56,8 @@
       (.substring str 0 n)
       str)))
 
-(defn el-stem [s]
-  (Elst/lowerStopAndStem s))
+(defn el-lower-and-stem [s]
+  (clojure.string/join " " (Elst/lowerAndStopPhrase s)))
+
+(defn el-lower-stop-and-stem [s]
+  (clojure.string/join " " (Elst/lowerStopAndStemPhrase s)))

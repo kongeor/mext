@@ -42,7 +42,8 @@
           (if-not uid
             [:a.button.is-primary {:href "/login"}
              [:strong "Login"]]
-            [:a.button.is-light {:href "/logout"} "Logout"])]]]]
+            [:a.button.is-light {:href "/admin"} "Admin"]
+            #_[:a.button.is-light {:href "/logout"} "Logout"])]]]]
 
       [:div.mb-4
        content]
@@ -126,24 +127,40 @@
          ]]]
       )))
 
-#_(defn stats [db uid]
-  (let [album-data (stats/album-plays db uid)]
+(defn login [db]
+  (let []
+    (base
+      nil
+      [:form {:action "/login" :method "post"}
+       [:div.field
+        [:p.control.has-icons-left.has-icons-right
+         [:input.input {:type "text" :placeholder "username" :name "username"}]
+         [:span.icon.is-small.is-left
+          [:i.fas.fa-envelope]]
+         [:span.icon.is-small.is-right
+          [:i.fas.fa-check]]]]
+       [:div.field
+        [:p.control.has-icons-left
+         [:input.input {:type "password" :placeholder "Password" :name "password"}]
+         [:span.icon.is-small.is-left
+          [:i.fas.fa-lock]]]]
+       [:div.field
+        [:p.control
+         [:button.button.is-success "Login"]]]])))
+
+(defn admin [_db uid]
+  (let [user (db/get-user-by-id uid)
+        blacklist (:mext.user/blacklist user)]
     (base
       uid
-      [:div
-       (for [part-data (partition-all 6 album-data)]
-         [:div.columns
-          (let [c (count part-data)
-                pd (concat part-data (repeat (- 6 c) nil))]
-            (for [a pd]
-              [:div.column
-               (when a
-                 [:div.card
-                  [:div.card-image
-                   [:figure.image
-                    [:img {:src (:img_url a)}]]]
-                  [:div.card-content
-                   [:p.title.is-4 (-> a :album_name)]
-                   [:p (str "tracks " (->> (-> a :tracks)
-                                        (clojure.string/join ", ")))] ;; TODO what to do with
-                   [:p (-> a :played-at inst-ms hmn/datetime)]]])]))])])))
+      [:form {:action "/admin/blacklist" :method "post"}
+       [:div.field
+        [:p.control.has-icons-left.has-icons-right
+         [:input.input {:type "text" :placeholder "blacklist" :name "blacklist" :value blacklist}]
+         [:span.icon.is-small.is-left
+          [:i.fas.fa-envelope]]
+         [:span.icon.is-small.is-right
+          [:i.fas.fa-check]]]]
+       [:div.field
+        [:p.control
+         [:button.button.is-success "Save"]]]])))

@@ -14,6 +14,7 @@
                  [http-kit "2.5.0"]
                  [juxt/crux-core "21.02-1.15.0-beta"]
                  [juxt/crux-rocksdb "21.02-1.15.0-beta"]
+                 [juxt/crux-lucene "21.02-1.15.0-alpha"]
                  [juxt/crux-jdbc "21.02-1.15.0-beta"]
                  [org.postgresql/postgresql "42.2.18"]
                  [com.taoensso/timbre "5.1.0"]
@@ -31,7 +32,8 @@
                  [day8.re-frame/http-fx "0.1.6"]
                  [re-frame "1.1.1"]
                  [secretary "1.2.3"]
-                 [com.github.kongeor/elst "0.3.0"]]
+                 [com.github.kongeor/elst "0.3.1"]
+                 [crypto-password "0.2.1"]]
 
   :plugins [[lein-environ "1.0.0"]
             [lein-pprint "1.2.0"]]

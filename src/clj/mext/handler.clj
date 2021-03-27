@@ -105,18 +105,53 @@
 
 (defn index-handler [req]
   (let [page-str (-> req :query-params (get "page"))
+        user-id (-> req :session :mext.user/id)
         page (if page-str
                (Integer/parseInt page-str)
                0)
         page' (inc page)]
-    (html/index nil nil page')))
+    (html/index nil user-id page')))
 
 (defn tag-form-handler [req]
   (let [a 1]
     (html/tag-form nil nil nil)))
 
+(defn login-get-handler [req]
+  (let []
+    (html/login nil)))
+
+(defn login-post-handler [req]
+  (let [{:keys [username password]} (:params req)
+        session (:session req)]
+    (if-let [user (db/check-user-password username password)]
+      (->
+        (response/redirect "/")
+        (assoc :session (assoc session :mext.user/id (:crux.db/id user))))
+      (html/login nil))))
+
+(defn admin-get-handler [req]
+  (let [session (:session req)]
+    (if-let [uid (:mext.user/id session)]
+      (html/admin nil uid)
+      (response/redirect "/login"))))
+
+(defn admin-blacklist-post-handler [req]
+  (let [{:keys [blacklist]} (:params req)
+        session (:session req)]
+    (if-let [uid (:mext.user/id session)]
+      (do
+        (db/update-user-blacklist uid blacklist)
+        (response/redirect "/admin"))
+      (html/login nil))))
+
 (defroutes routes
   (GET "/" []  index-handler)
+  (GET "/login" [] login-get-handler)
+  (POST "/login" [] login-post-handler)
+
+  (GET "/admin" [] admin-get-handler)
+  (POST "/admin/blacklist" [] admin-blacklist-post-handler)
+
   (GET "/admin/tags" []  (html/tag-form nil nil nil))
   (GET "/admin/tags-test" []  (html/tag-form-test nil nil nil))
   (POST "/admin/tags" []  tag-form-handler)
@@ -158,7 +193,7 @@
   (-> routes
     #_(wrap-restful-format :formats [:json])
     (wrap-defaults (-> site-defaults
-                     (assoc-in [:session :store] (carmine-store {:pool {} :spec {:uri (:redis-url env)}} {:key-prefix "mext"})) ;; TODO secure
+                     #_(assoc-in [:session :store] (carmine-store {:pool {} :spec {:uri (:redis-url env)}} {:key-prefix "mext"})) ;; TODO secure
                      (assoc-in [:session :cookie-attrs :max-age] (* 60 60 24 30)) ;; month
                      (assoc-in [:security :anti-forgery] false))) ;; TODO check too
     ; wrap-dir-index

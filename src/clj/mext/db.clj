@@ -2,6 +2,7 @@
   (:require [crux.api :as crux]
             [taoensso.timbre :as timbre]
             [system.repl :refer [system]]
+            [crypto.password.bcrypt :as bcrypt]
             [mext.util :as util]))
 
 (defn now []
@@ -182,20 +183,65 @@
                        '{:find [e]
                          :where [[e :mext.user/email ?]]})))
 
+(defn get-user-by-id [id]
+  (first
+    (entity-data (-> system :db :db)
+      (crux/q (crux/db (-> system :db :db))
+        {:find '[?e]
+         :where '[[?e :crux.db/id  ?id]]
+         :args [{'?id id}]}))))
+
 (defn get-user-by-email [email]
+  (first
+    (entity-data (-> system :db :db)
+      (crux/q (crux/db (-> system :db :db))
+        {:find '[?e]
+         :where '[[?e :mext.user/email ?email]]
+         :args [{'?email email}]}))))
+
+(defn get-user-by-username [username]
   (first
     (entity-data (-> system :db :db)
                  (crux/q (crux/db (-> system :db :db))
                          {:find '[?e]
-                          :where '[[?e :mext.user/email ?email]]
-                          :args [{'?email email}]}))))
+                          :where '[[?e :mext.user/username ?username]]
+                          :args [{'?username username}]}))))
 
 (defn insert-user [email]
   (crux/submit-tx
     (-> system :db :db)
     [[:crux.tx/put
-      {:crux.db/id (keyword (util/uuid))
+      {:crux.db/id (util/uuid)
        :mext.user/email email}]]))
+
+(defn register-user [username password]
+  (crux/submit-tx
+    (-> system :db :db)
+    [[:crux.tx/put
+      {:crux.db/id (util/uuid)
+       :mext.user/username username
+       :mext.user/password (bcrypt/encrypt password)}]]))
+
+(defn check-user-password [username password]
+  (if-let [user (get-user-by-username username)]
+    (when (bcrypt/check password (:mext.user/password user))
+      (dissoc user :mext.user/password))))
+
+(defn update-user-blacklist [uid blacklist]
+  (if-let [user (get-user-by-id uid)]
+    (let [blacklist' (util/el-lower-and-stem blacklist)]
+      (crux/submit-tx
+        (-> system :db :db)
+        [[:crux.tx/put
+          (merge
+            user
+            {:mext.user/blacklist blacklist'})]]))))
+
+(comment
+  #_(register-user "kostas" "asdasd")
+  #_(get-user-by-username "kostas")
+  #_(check-user-password "kostas" "asdasd")
+  )
 
 #_(get-users)
 
@@ -211,3 +257,46 @@
             (do (Thread/sleep 50)
                 (when (< i 20)
                   (recur (inc i)))))))))
+
+
+(defn text-query [title]
+  (crux/q
+    (crux/db (-> system :db :db))
+    '{:find [?e]
+      :in [title]
+      :where [[(text-search :mext.headline/tile title) [[?e]]]
+              [?e :crux.db/id]]
+      :order-by [[?s :desc]]}
+    title))
+
+(comment
+  (text-query "μητσο*"))
+
+(defn lucene-text-query [query]
+  (crux/q
+    (crux/db (-> system :db :db))
+    '{:find [?e ?s ?t]
+      :in [?q]
+      :where [[(lucene-text-search ?q) [[?e ?s]]]
+              [?e :mext.headline/title ?t]]
+      :order-by [[?s :asc]]}
+    query))
+
+(comment
+  #_(lucene-text-query "mext.headline\\/title:cov* AND NOT mext.headline\\/title:Ακίνητα")
+  #_(lucene-text-query "mext.headline\\/url:h*")
+  (lucene-text-query "mext.headline\\/url:h* AND NOT mext.headline\\/title:(survivor κορο* κορω* nasa gollum εμβ* τουρκ* Gossip-tv.gr covid Newsbomb)")
+  #_(lucene-text-query "NOT mext.headline\\/title:Ακίνητα")
+  #_(lucene-text-query "*:* AND NOT mext.headline\\/title:Ακίνητα"))
+
+
+(comment
+  (crux/q
+    (crux/db (-> system :db :db))
+    {:find '[?e]
+     :where '[[(lucene-text-search :name "Ivan") [[?e]]]
+              ]
+     }))
+
+(comment
+  (get-users))

@@ -58,7 +58,7 @@
                          })))
 
 (comment
-  (get-headlines {:limit 30})
+  (count (get-headlines {:limit 30}))
   (last (get-headlines {})))
 
 (defn get-headline-source [title]
@@ -230,15 +230,17 @@
 (defn update-user-blacklist [uid blacklist]
   (if-let [user (get-user-by-id uid)]
     (let [blacklist' (util/el-lower-and-stem blacklist)]
-      (crux/submit-tx
-        (-> system :db :db)
-        [[:crux.tx/put
-          (merge
-            user
-            {:mext.user/blacklist blacklist'})]]))))
+      (let [node (-> system :db :db)
+            tx (crux/submit-tx
+                 node
+                 [[:crux.tx/put
+                   (merge
+                     user
+                     {:mext.user/blacklist blacklist'})]])]
+        (crux/await-tx node tx)))))
 
 (comment
-  #_(register-user "kostas" "asdasd")
+  (register-user "kostas" "asdasd")
   #_(get-user-by-username "kostas")
   #_(check-user-password "kostas" "asdasd")
   )
@@ -272,6 +274,27 @@
 (comment
   (text-query "μητσο*"))
 
+(defn get-headlines-for-user [uid {:keys [offset limit] :or {offset 0 limit 10} :as params}]
+  (let [blacklist (:mext.user/blacklist (get-user-by-id uid))]
+    (if-let [blacklist' (util/trim-to-null blacklist)]
+      (let [query (format "mext.headline\\/url:h* AND NOT mext.headline\\/search-text:(%s)" blacklist')]
+        (entity-data (-> system :db :db)
+          (crux/q (crux/db (-> system :db :db))
+            {:find '[?e ?published-at]
+             :where '[[?e :mext.headline/published-at ?published-at]
+                      [(lucene-text-search ?q) [[?e]]]]
+             :in '[?q]
+             :order-by [['?published-at :desc]]
+             :limit limit
+             :offset offset
+             }
+            query)))
+      (get-headlines params))))
+
+(comment
+  (let [uid (:crux.db/id (get-user-by-username "kostas"))]
+    (get-headlines-for-user uid)))
+
 (defn lucene-text-query [query]
   (crux/q
     (crux/db (-> system :db :db))
@@ -285,7 +308,7 @@
 (comment
   #_(lucene-text-query "mext.headline\\/title:cov* AND NOT mext.headline\\/title:Ακίνητα")
   #_(lucene-text-query "mext.headline\\/url:h*")
-  (lucene-text-query "mext.headline\\/url:h* AND NOT mext.headline\\/title:(survivor κορο* κορω* nasa gollum εμβ* τουρκ* Gossip-tv.gr covid Newsbomb)")
+  (lucene-text-query "mext.headline\\/url:h* AND NOT mext.headline\\/title:(\"Διώρυγα Σουέζ\")")
   #_(lucene-text-query "NOT mext.headline\\/title:Ακίνητα")
   #_(lucene-text-query "*:* AND NOT mext.headline\\/title:Ακίνητα"))
 

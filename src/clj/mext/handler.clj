@@ -108,9 +108,8 @@
         user-id (-> req :session :mext.user/id)
         page (if page-str
                (Integer/parseInt page-str)
-               0)
-        page' (inc page)]
-    (html/index nil user-id page')))
+               0)]
+    (html/index nil user-id page)))
 
 (defn tag-form-handler [req]
   (let [a 1]

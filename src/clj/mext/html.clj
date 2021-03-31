@@ -65,7 +65,8 @@
      [:a.card-footer-item {:href (:mext.headline/url h)} "link"]]]])
 
 (defn index [db uid page]
-  (let [headlines (db/get-headlines {:offset (* page 12) :limit 12})
+  (let [params {:offset (* page 12) :limit 12}
+        headlines (if uid (db/get-headlines-for-user uid params) (db/get-headlines params))
         now (inst-ms (Date.))]
     (base
       uid
@@ -75,7 +76,7 @@
           (for [h headline-data]
             (headline h))])
        [:div.columns.is-centered
-        [:a.button.is-primary {:href (str "/?page=" page)} "Load moar"]]])))
+        [:a.button.is-primary {:href (str "/?page=" (inc page))} "Load moar"]]])))
 
 (defn tag-form [db uid page]
   (let [tags [{:key "tag2" :raw-value "foo bar baz"} {:key "tag2" :raw-value "quux qu"}]

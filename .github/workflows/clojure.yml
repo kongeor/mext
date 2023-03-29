@@ -18,7 +18,7 @@ jobs:
     - name: Build uberjar
       run: lein uberjar
     - name: Publish to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: kongeor/mext
         username: ${{ secrets.DOCKER_USERNAME }}
